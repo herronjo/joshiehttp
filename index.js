@@ -1,0 +1,297 @@
+var http = require("http");
+var https = require('https');
+var url = require("url");
+var fs = require("fs");
+var path = require("path");
+var proc = require('child_process');
+var par = "";
+var conf = [];
+
+var readconf = function(config) {
+    var content = fs.readFileSync(config);
+    conf = JSON.parse(content);
+};
+
+var get = function(url, answ) {
+    var data = "";
+    if (url != undefined) {
+        if (url.charAt(4) == "s") {
+            try{
+                https.get(url, function(response) {
+                    response.setEncoding('utf8');
+                    response.on('data', function(body) {
+                        data = data + body;
+                        response.on('end', function (){
+                            answ(data);
+                        });
+                    });
+                });
+            } catch(err) {
+                console.log("Oops!");
+            }
+        } else if (url.charAt(4) == ":") {
+            try{
+                http.get(url, function(response) {
+                    response.setEncoding('utf8');
+                    response.on('data', function(body) {
+                        data = data + body;
+                        response.on('end', function (){
+                            answ(data);
+                        });
+                    });
+                });
+            } catch(err) {
+                console.log("Oops!");
+            }
+        }
+    }
+};
+
+var post = function(url, stuff, answ) {
+    var data = "";
+    var tmp = url.split(":");
+    var protocol = tmp[0];
+    var hostnametmp = tmp[1].split("/");
+    var hostname = hostnametmp[hostnametmp.length - 1];
+    var porttmp = tmp[2].split("/");
+    var port = porttmp[0];
+    var path = tmp[2].split(port)[1];
+    var options = {
+        hostname: hostname,
+        port: port,
+        path: path,
+        method: 'POST'
+    };
+    if (protocol == "http"){
+        var req = http.request(options, function(res) {
+            res.setEncoding('utf8');
+            res.on('data', function(body) {
+                data = data+body;
+            });
+            res.on('end', function() {
+                answ(data);
+            });
+        });
+        req.on('error', function(err) {
+            if(err) {
+                console.log("Oops!");
+            }
+        });
+        req.write(stuff);
+        req.end();
+    }
+    if (protocol == "https") {
+        var reqs = https.request(options, function(res) {
+            res.setEncoding('utf8');
+            res.on('data', function(body) {
+                data = data+body;
+            });
+            res.on('end', function() {
+                answ(data);
+            });
+        });
+        reqs.on('error', function(err) {
+            if(err) {
+                console.log("Oops!");
+            }
+        });
+        reqs.write(stuff);
+        reqs.end();
+    }
+};
+
+var server = http.createServer(function(req, res) {
+    var params = url.parse(req.url,true).pathname;
+    var params2 = url.parse(req.url,true).query;
+    var params3 = url.parse(req.url,true);
+    if (params == "/") par = "/index.html"; else par = params;
+    var dest = conf[req.headers.host.split(":")[0]];
+    if (dest == undefined) {dest = conf["default"]}
+    var ext = path.extname(par).toLowerCase();
+    if (dest["type"] == "proxy") {
+        if (req.method == "GET") {
+            get(dest["location"].concat(params3.path), function(answ){
+                try {
+                    res.end(answ);
+                } catch(err) {
+                    console.log("Oops!");
+                }
+            });
+        } else if (req.method == "POST") {
+            data = "";
+            req.on('data', function(body){
+                data = data+body;
+            });
+            req.on('end', function(){
+                post(dest["location"], data, function(answ){
+                    res.end(answ);
+                });
+            });
+        } else {
+            req.writeHead(405);
+            req.end();
+        }
+    } else if (dest["type"] == "local") {
+        fs.stat(dest["location"].concat(par), function(err, stats) {
+            if (stats != undefined){
+                if(stats.isDirectory()) {
+                    par = par + "/index.html";
+                }
+            }
+            var exists = fs.existsSync(dest["location"].concat(par));
+            if (exists) {
+                if (ext == ".sjs") {
+                    try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
+                    proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters).replace(/"/g, '\\"') + '"', function(err, stdout, stderr) {
+                        if (!err) {
+                            res.write(stdout);
+                            res.end();
+                        } else {
+                            console.log(err);
+                        }
+                    });
+                } else if (ext == ".jspt") {
+                    res.end("Under construction");
+                } else if (ext == ".apk" || ext == ".apkx" || ext == ".bin" || ext == ".ttf" || ext == ".pptx" || ext == ".zip" || ext == ".exe" || ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif") {
+                    var stats = fs.statSync(dest["location"].concat(par));
+                    fs.open(dest["location"].concat(par), 'r', function(status, fd) {
+                        if (status) {console.log(status.message); return;}
+                        var buffer = new Buffer(stats.size);
+                        fs.read(fd, buffer, 0, stats.size, 0, function(err, num) {
+                            res.write(buffer);
+                            if(num == stats.size) {res.end();};
+                        });
+                    });
+                } else {
+                    var data = fs.readFileSync(dest["location"].concat(par), 'utf8');
+                    res.end(data);
+                }
+            } else {
+                var exists2 = fs.existsSync(dest["location"].concat("/404.html"));
+                if (exists2) {
+                    res.writeHead(404);
+                    var data2 = fs.readFileSync(dest["location"].concat(par), 'utf8');
+                    res.end(data2);
+                } else {
+                    res.writeHead(404);
+                    res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
+                    res.write(par);
+                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.0<body></html>");
+                    res.end();
+                }
+            }
+        });
+    }
+});
+
+if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
+    var options = {
+        key: fs.readFileSync('ssl/key.pem'),
+        cert: fs.readFileSync('ssl/cert.pem')
+    };
+    var sserver = https.createServer(options, function(req, res) {
+        var params = url.parse(req.url,true).pathname;
+        var params2 = url.parse(req.url,true).query;
+        var params3 = url.parse(req.url,true);
+        if (params == "/") par = "/index.html"; else par = params;
+        var dest = conf[req.headers.host.split(":")[0]];
+        if (dest == undefined) {dest = conf["default"]}
+        var ext = path.extname(par);
+        if (dest["type"] == "proxy") {
+            if (req.method == "GET") {
+                get(dest["location"].concat(params3.path), function(answ){
+                    try {
+                        res.end(answ);
+                    } catch(err) {
+                        console.log("Oops!");
+                    }
+                });
+            } else if (req.method == "POST") {
+                data = "";
+                req.on('data', function(body){
+                    data = data+body;
+                });
+                req.on('end', function(){
+                    post(dest["location"], data, function(answ){
+                        res.end(answ);
+                    });
+                });
+            } else {
+                req.writeHead(405);
+                req.end();
+            }
+        } else if (dest["type"] == "local") {
+            fs.stat(dest["location"].concat(par), function(err, stats) {
+                if (stats != undefined){
+                    if(stats.isDirectory()) {
+                        par = par + "/index.html";
+                    }
+                }
+                var exists = fs.existsSync(dest["location"].concat(par));
+                if (exists) {
+                    if (ext == ".sjs") {
+                        try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
+                        proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters).replace(/"/g, '\\"') + '"', function(err, stdout, stderr) {
+                            if (!err) {
+                                res.write(stdout);
+                                res.end();
+                            } else {
+                                console.log(err);
+                            }
+                        });
+                    } else if (ext == ".jspt") {
+                        res.end("Under construction");
+                    } else if (ext == ".apk" || ext == ".apkx" || ext == ".bin" || ext == ".ttf" || ext == ".pptx" || ext == ".zip" || ext == ".exe" || ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif") {
+                        var stats = fs.statSync(dest["location"].concat(par));
+                        fs.open(dest["location"].concat(par), 'r', function(status, fd) {
+                            if (status) {console.log(status.message); return;}
+                            var buffer = new Buffer(stats.size);
+                            fs.read(fd, buffer, 0, stats.size, 0, function(err, num) {
+                                res.write(buffer);
+                                if(num == stats.size) {res.end();};
+                            });
+                        });
+                    } else {
+                        var data = fs.readFileSync(dest["location"].concat(par), 'utf8');
+                        res.end(data);
+                    }
+                } else {
+                    var exists2 = fs.existsSync(dest["location"].concat("/404.html"));
+                    if (exists2) {
+                        res.writeHead(404);
+                        var data2 = fs.readFileSync(dest["location"].concat(par), 'utf8');
+                        res.end(data2);
+                    } else {
+                        res.writeHead(404);
+                        res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
+                        res.write(par);
+                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.0<body></html>");
+                        res.end();
+                    }
+                }
+            });
+        }
+    });
+    if (process.argv.indexOf("--https") != -1) {
+        sserver.listen(process.argv[parseInt(process.argv.indexOf("--https"))+1]);
+    } else if (process.argv.indexOf("-s") != -1) {
+        sserver.listen(process.argv[parseInt(process.argv.indexOf("-s"))+1]);
+    }
+}
+
+if (process.argv.indexOf("--listen") != -1) {
+    server.listen(process.argv[parseInt(process.argv.indexOf("--listen"))+1]);
+} else if (process.argv.indexOf("-l") != -1) {
+    server.listen(process.argv[parseInt(process.argv.indexOf("-l"))+1]);
+} else {
+    server.listen(8080);
+}
+if (process.argv.indexOf("--config") != -1) {
+    readconf(process.argv[parseInt(process.argv.indexOf("--config"))+1]);
+} else if (process.argv.indexOf("-c") != -1) {
+    readconf(process.argv[parseInt(process.argv.indexOf("-c"))+1]);
+} else {
+    readconf("main.conf");
+}
+
+console.log("Started JoshieHTTPD/2.0");
