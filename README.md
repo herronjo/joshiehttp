@@ -6,7 +6,7 @@ Create the directory /var/www/html, or edit the 'default' configuration location
 
 Create 'index.html' in that folder and put whatever you want in it.
 
-Run ./start.sh
+Run `./start.sh`
 
 # Creating new domains in main.conf
 The configuration file is a JSON file that contains the settings for every website you have running. If it's not found in there, the 'default' configuration is used.
