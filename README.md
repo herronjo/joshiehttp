@@ -41,6 +41,7 @@ Ex:
 
 ```JSON
 {
-  "default": {"type": "proxy", "location": "https://www.google.com:443"}
+  "default": {"type": "proxy", "location": "http://www.example.com:80"},
+  "api.example.com": {"type": "proxy", "location": "http://localhost:8080"}
 }
 ```
