@@ -47,7 +47,7 @@ Ex:
 ```
 
 # SSL
-If you wish for JoshieHTTP to run with SSL (who wouldn't!), create a directory named `ssl` in the same directory as `index.js`
+If you wish for JoshieHTTP to run with SSL (who wouldn't?), create a directory named `ssl` in the same directory as `index.js`
 
 In `ssl`, you need two files. `key.pem`, which is your private key, and `cert.pem`, which is your certificate file.
 
