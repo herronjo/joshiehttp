@@ -3,9 +3,13 @@ A webserver designed and programmed by a bored 15 year old that has nothing bett
 
 # Table of contents 
 *##[Running](#running)
+
 *##[Adding sites](https://github.com/herronjo/joshiehttp#creating-new-domains-in-mainconf)
+
 *##[Proxying](https://github.com/herronjo/joshiehttp#proxying-a-site-or-internal-site)
+
 *##[Scripting](https://github.com/herronjo/joshiehttp#scripting)
+
 *##[SSL](https://github.com/herronjo/joshiehttp#ssl)
 
 # Running
