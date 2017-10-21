@@ -6,6 +6,7 @@ var path = require("path");
 var proc = require('child_process');
 var par = "";
 var conf = [];
+var raw_format_download = [".apk", ".apkx", ".bin", ".ttf", ".pptx", ".zip", ".exe", ".jpg", ".jpeg", ".png", ".gif"];
 
 var readconf = function(config) {
     var content = fs.readFileSync(config);
@@ -101,6 +102,10 @@ var post = function(url, stuff, answ) {
 };
 
 var server = http.createServer(function(req, res) {
+    var date = new Date();
+    var hour = date.getHours();
+    var minute = date.getMinutes();
+    var second = date.getSeconds();
     var params = url.parse(req.url,true).pathname;
     var params2 = url.parse(req.url,true).query;
     var params3 = url.parse(req.url,true);
@@ -108,6 +113,7 @@ var server = http.createServer(function(req, res) {
     var dest = conf[req.headers.host.split(":")[0]];
     if (dest == undefined) {dest = conf["default"]}
     var ext = path.extname(par).toLowerCase();
+    fs.appendFileSync("./log/log.txt", "[".concat(hour).concat(":").concat(minute).concat(":").concat(second).concat("] ").concat(req.connection.remoteAddress).concat(" : ").concat(req.method).concat(" : ").concat(req.headers.host).concat(req.url).concat("\n"));
     if (dest["type"] == "proxy") {
         if (req.method == "GET") {
             get(dest["location"].concat(params3.path), function(answ){
@@ -118,7 +124,7 @@ var server = http.createServer(function(req, res) {
                 }
             });
         } else if (req.method == "POST") {
-            data = "";
+            var data = "";
             req.on('data', function(body){
                 data = data+body;
             });
@@ -139,20 +145,39 @@ var server = http.createServer(function(req, res) {
                 }
             }
             var exists = fs.existsSync(dest["location"].concat(par));
-            if (exists) {
+            if (exists == true) {exists = 1;} else {exists = 0;}
+            if (exists == 1) {
                 if (ext == ".sjs") {
-                    try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                    proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters).replace(/"/g, '\\"') + '"', function(err, stdout, stderr) {
-                        if (!err) {
-                            res.write(stdout);
-                            res.end();
-                        } else {
-                            console.log(err);
-                        }
-                    });
+                    if (req.method == "GET"){
+                        try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
+                        proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/‘/g, "'").replace(/’/g, "'").replace(/%E2%80%98/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + '"', function(err, stdout, stderr) {
+                            if (!err) {
+                                res.write(stdout);
+                                res.end();
+                            } else {
+                                console.log(err);
+                            }
+                        });
+                    } else if (req.method == "POST") {
+                        var data = "";
+                        req.on('data', function(body){
+                            data = data+body;
+                        });
+                        req.on('end', function(){
+                            try {var parameters = data;} catch(err) {var parameters = ""}
+                            proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/‘/g, "'").replace(/’/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + '"', function(err, stdout, stderr) {
+                                if (!err) {
+                                    res.write(stdout);
+                                    res.end();
+                                } else {
+                                    console.log(err);
+                                }
+                            });
+                        });
+                    }
                 } else if (ext == ".jspt") {
                     res.end("Under construction");
-                } else if (ext == ".apk" || ext == ".apkx" || ext == ".bin" || ext == ".ttf" || ext == ".pptx" || ext == ".zip" || ext == ".exe" || ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif") {
+                } else if (raw_format_download.indexOf(ext) != -1) {
                     var stats = fs.statSync(dest["location"].concat(par));
                     fs.open(dest["location"].concat(par), 'r', function(status, fd) {
                         if (status) {console.log(status.message); return;}
@@ -166,7 +191,7 @@ var server = http.createServer(function(req, res) {
                     var data = fs.readFileSync(dest["location"].concat(par), 'utf8');
                     res.end(data);
                 }
-            } else {
+            } else if (exists == 0) {
                 var exists2 = fs.existsSync(dest["location"].concat("/404.html"));
                 if (exists2) {
                     res.writeHead(404);
@@ -176,9 +201,15 @@ var server = http.createServer(function(req, res) {
                     res.writeHead(404);
                     res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                     res.write(par);
-                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.0<body></html>");
+                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.1<body></html>");
                     res.end();
                 }
+            } else if (exists == 2) {
+                res.writeHead(403);
+                res.end("Access denied!");
+            } else {
+                res.writeHead(500);
+                res.end("Error 500: internal server error.");
             }
         });
     }
@@ -190,6 +221,10 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
         cert: fs.readFileSync('ssl/cert.pem')
     };
     var sserver = https.createServer(options, function(req, res) {
+        var date = new Date();
+        var hour = date.getHours();
+        var minute = date.getMinutes();
+        var second = date.getSeconds();
         var params = url.parse(req.url,true).pathname;
         var params2 = url.parse(req.url,true).query;
         var params3 = url.parse(req.url,true);
@@ -197,6 +232,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
         var dest = conf[req.headers.host.split(":")[0]];
         if (dest == undefined) {dest = conf["default"]}
         var ext = path.extname(par);
+        fs.appendFileSync("./log/log.txt", "[".concat(hour).concat(":").concat(minute).concat(":").concat(second).concat("] ").concat(req.connection.remoteAddress).concat(" : ").concat(req.method).concat(" : ").concat(req.headers.host).concat(req.url).concat("\n"));
         if (dest["type"] == "proxy") {
             if (req.method == "GET") {
                 get(dest["location"].concat(params3.path), function(answ){
@@ -228,20 +264,39 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                     }
                 }
                 var exists = fs.existsSync(dest["location"].concat(par));
-                if (exists) {
+                if (exists == true) {exists = 1;} else {exists = 0;}
+                if (exists == 1) {
                     if (ext == ".sjs") {
-                        try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                        proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters).replace(/"/g, '\\"') + '"', function(err, stdout, stderr) {
-                            if (!err) {
-                                res.write(stdout);
-                                res.end();
-                            } else {
-                                console.log(err);
-                            }
-                        });
+                        if (req.method == "GET"){
+                            try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
+                            proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/‘/g, "'").replace(/’/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + '"', function(err, stdout, stderr) {
+                                if (!err) {
+                                    res.write(stdout);
+                                    res.end();
+                                } else {
+                                    console.log(err);
+                                }
+                            });
+                        } else if (req.method == "POST") {
+                            var data = "";
+                            req.on('data', function(body){
+                                data = data+body;
+                            });
+                            req.on('end', function(){
+                                try {var parameters = data;} catch(err) {var parameters = ""}
+                                proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/‘/g, "'").replace(/’/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + '"', function(err, stdout, stderr) {
+                                    if (!err) {
+                                        res.write(stdout);
+                                        res.end();
+                                    } else {
+                                        console.log(err);
+                                    }
+                                });
+                            });
+                        }
                     } else if (ext == ".jspt") {
                         res.end("Under construction");
-                    } else if (ext == ".apk" || ext == ".apkx" || ext == ".bin" || ext == ".ttf" || ext == ".pptx" || ext == ".zip" || ext == ".exe" || ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif") {
+                    } else if (raw_format_download.indexOf(ext) != -1) {
                         var stats = fs.statSync(dest["location"].concat(par));
                         fs.open(dest["location"].concat(par), 'r', function(status, fd) {
                             if (status) {console.log(status.message); return;}
@@ -255,7 +310,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                         var data = fs.readFileSync(dest["location"].concat(par), 'utf8');
                         res.end(data);
                     }
-                } else {
+                } else if (exists == 0) {
                     var exists2 = fs.existsSync(dest["location"].concat("/404.html"));
                     if (exists2) {
                         res.writeHead(404);
@@ -265,9 +320,15 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                         res.writeHead(404);
                         res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                         res.write(par);
-                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.0<body></html>");
+                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.1<body></html>");
                         res.end();
                     }
+                } else if (exists == 2) {
+                    res.writeHead(403);
+                    res.end("Access denied!");
+                } else {
+                    res.writeHead(500);
+                    res.end("Error 500: internal server error.");
                 }
             });
         }
@@ -294,4 +355,4 @@ if (process.argv.indexOf("--config") != -1) {
     readconf("main.conf");
 }
 
-console.log("Started JoshieHTTPD/2.0");
+console.log("Started JoshieHTTPD/2.1");
