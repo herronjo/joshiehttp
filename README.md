@@ -9,17 +9,17 @@ Create `index.html` in that folder and put whatever you want in it.
 Run `./start.sh`
 
 # Creating new domains in main.conf
-The configuration file is a JSON file that contains the settings for every website you have running. If it's not found in there, the 'default' configuration is used.
+The configuration file is a JSON file that contains the settings for every website you have running. If it's not found in there, the `'default'` configuration is used.
 
-To create a new site, append a comma to the end of the last entry in the main.conf, in between the curly brackets.
+To create a new site, append a comma to the end of the last entry in the `main.conf`, in between the curly brackets.
 
-In quotes, type out the full domain name, with separate entries for with and without a www.
+In quotes, type out the full domain name, with separate entries for with and without a `www.`
 
-After the quote, type a : and then an open curly bracket.
+After the quote, type a `:` and then an open curly bracket.
 
-In quotes, type "type", then a : and then in quotes "local"
+In quotes, type `"type"`, then a `:` and then in quotes `"local"`
 
-Append a comma, then type in quotes "location", a :, and then in quotes the folder you wish the domain to point to.
+Append a comma, then type in quotes `"location"`, a `:`, and then in quotes the folder you wish the domain to point to.
 
 Ex:
 
