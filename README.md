@@ -2,9 +2,9 @@
 A webserver designed and programmed by a bored 15 year old that has nothing better to do.
 
 # Running
-Create the directory /var/www/html, or edit the 'default' configuration location to point to another folder that already exists.
+Create the directory /var/www/html, or edit the `'default'` configuration location to point to another folder that already exists.
 
-Create 'index.html' in that folder and put whatever you want in it.
+Create `index.html` in that folder and put whatever you want in it.
 
 Run `./start.sh`
 
