@@ -1,6 +1,9 @@
 # JoshieHTTP
 A webserver designed and programmed by a bored 15 year old that has nothing better to do.
 
+# Table of contents 
+[test](https://github.com/herronjo/joshiehttp#running)
+
 # Running
 Create the directory /var/www/html, or edit the `'default'` configuration location to point to another folder that already exists.
 
@@ -45,6 +48,12 @@ Ex:
   "api.example.com": {"type": "proxy", "location": "http://localhost:8080"}
 }
 ```
+
+# Scripting
+PHP, Ruby, Python, etc. is not supported in JoshieHTTP. Mainly because I didn't feel like adding them. Too much. So, to make up for that, I made the `.sjs` extension for scripting. It's just a .js file, but renamed. It runs in node.js, and all URL parameters are passed on as command line arguments to the script. You can go on from there, reading the arguments. It's all run server-side, and to send data back you just send it back in a `console.log();`. There's actually a lot you can do with this. Happy scripting!
+
+_Coming soon:
+JoshieScript in the .jspt format_
 
 # SSL
 If you wish for JoshieHTTP to run with SSL (who wouldn't?), create a directory named `ssl` in the same directory as `index.js`
