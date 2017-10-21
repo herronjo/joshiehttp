@@ -2,15 +2,15 @@
 A webserver designed and programmed by a bored 15 year old that has nothing better to do.
 
 # Table of contents 
-*##[Running](#running)
+[Running](#running)
 
-*##[Adding sites](https://github.com/herronjo/joshiehttp#creating-new-domains-in-mainconf)
+[Adding sites](https://github.com/herronjo/joshiehttp#creating-new-domains-in-mainconf)
 
-*##[Proxying](https://github.com/herronjo/joshiehttp#proxying-a-site-or-internal-site)
+[Proxying](https://github.com/herronjo/joshiehttp#proxying-a-site-or-internal-site)
 
-*##[Scripting](https://github.com/herronjo/joshiehttp#scripting)
+[Scripting](https://github.com/herronjo/joshiehttp#scripting)
 
-*##[SSL](https://github.com/herronjo/joshiehttp#ssl)
+[SSL](https://github.com/herronjo/joshiehttp#ssl)
 
 # Running
 Create the directory /var/www/html, or edit the `'default'` configuration location to point to another folder that already exists.
