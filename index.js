@@ -150,7 +150,7 @@ var server = http.createServer(function(req, res) {
                 if (ext == ".sjs") {
                     if (req.method == "GET"){
                         try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                        proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/‘/g, "'").replace(/’/g, "'").replace(/%E2%80%98/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + '"', function(err, stdout, stderr) {
+                        proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/‘/g, "'").replace(/’/g, "'").replace(/%E2%80%98/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
                             if (!err) {
                                 res.write(stdout);
                                 res.end();
@@ -269,7 +269,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                     if (ext == ".sjs") {
                         if (req.method == "GET"){
                             try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                            proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/‘/g, "'").replace(/’/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + '"', function(err, stdout, stderr) {
+                            proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/‘/g, "'").replace(/’/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
                                     res.end();
