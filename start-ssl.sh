@@ -1,4 +1,4 @@
 #!/bin/sh
 while true; do
-	node server.js -l 80 -s 443
+	node index.js -l 80 -s 443
 done
