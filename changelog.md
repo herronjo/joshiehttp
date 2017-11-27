@@ -18,3 +18,7 @@ Security stuff
 Fixed stuff involving URL parameters and .sjs files
 
 etc.
+
+2.2 - Addition of PHP support
+
+That's it
