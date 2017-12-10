@@ -230,7 +230,7 @@ var server = http.createServer(function(req, res) {
                     res.writeHead(404);
                     res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                     res.write(par);
-                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3_Linux<body></html>");
+                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3_Windows<body></html>");
                     res.end();
                 }
             } else if (exists == 2) {
@@ -378,7 +378,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                         res.writeHead(404);
                         res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                         res.write(par);
-                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3_Linux<body></html>");
+                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3_Windows<body></html>");
                         res.end();
                     }
                 } else if (exists == 2) {
@@ -413,4 +413,4 @@ if (process.argv.indexOf("--config") != -1) {
     readconf("main.conf");
 }
 
-console.log("Started JoshieHTTPD/2.3_Linux);
+console.log("Started JoshieHTTPD/2.3_Windows");
