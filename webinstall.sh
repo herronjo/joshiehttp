@@ -23,15 +23,20 @@ wget -O ~/.itmp/main.conf http://joshiehttp.gq/dl/linux/main.conf
 echo " * Downloading run files"
 wget -O ~/.itmp/start.sh http://joshiehttp.gq/dl/linux/start.sh
 wget -O ~/.itmp/start-ssl.sh http://joshiehttp.gq/dl/linux/start-ssl.sh
-if [ -d "/var/www" ]
+if [ ! -d "/var/www" ]
 then
 	echo " * Creating /var/www"
 	mkdir /var/www
 fi
-if [ -d "/var/www/html" ]
+if [ ! -d "/var/www/html" ]
 then
 	echo " * Creating /var/www/html"
 	mkdir /var/www/html
+fi
+if [ ! -d "/var/www/log" ]
+then 
+	echo " * Creating log directory"
+	mkdir /var/www/log
 fi
 echo " * Moving files"
 mv -f ~/.itmp/* /var/www/*
@@ -39,6 +44,7 @@ echo " * chmodding files"
 chmod 660 /var/www/main.conf
 chmod 555 /var/www/server.js
 chmod 660 /var/www
+chmod 660 /var/www/log
 chmod 550 /var/www/start.sh
 chmod 550 /var/www/start-ssl.sh
 UserExists secureweb
@@ -52,6 +58,7 @@ else
 fi
 echo " * chowning files"
 chown -R secureweb:secureweb /var/www/html
+chown -R secureweb:secureweb /var/www/log
 echo " * Deleting temporary files"
 rm -rf ~/.itmp
 echo " * Done!"
