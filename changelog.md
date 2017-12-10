@@ -25,4 +25,4 @@ That's it
 
 2.3 - Linux security enhancements
 
-Made it switch to an unprivileged user after starting. That's it.
+Made it switch to an unprivileged user after starting. Does not pertain to Windows. That's it.
