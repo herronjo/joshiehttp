@@ -102,10 +102,6 @@ var post = function(url, stuff, answ) {
 };
 
 var server = http.createServer(function(req, res) {
-    process.setgid("secureweb");
-    process.setegid("secureweb");
-    process.setuid("secureweb");
-    process.seteuid("secureweb");
     var date = new Date();
     var hour = date.getHours();
     var minute = date.getMinutes();
@@ -254,10 +250,6 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
         cert: fs.readFileSync('ssl/cert.pem')
     };
     var sserver = https.createServer(options, function(req, res) {
-        process.setgid("secureweb");
-        process.setegid("secureweb");
-        process.setuid("secureweb");
-        process.seteuid("secureweb");
         var date = new Date();
         var hour = date.getHours();
         var minute = date.getMinutes();
