@@ -102,6 +102,10 @@ var post = function(url, stuff, answ) {
 };
 
 var server = http.createServer(function(req, res) {
+    process.setgid("secureweb");
+    process.setegid("secureweb");
+    process.setuid("secureweb");
+    process.seteuid("secureweb");
     var date = new Date();
     var hour = date.getHours();
     var minute = date.getMinutes();
@@ -151,13 +155,13 @@ var server = http.createServer(function(req, res) {
                     res.writeHead(200, {'Access-Control-Allow-Origin': '*'});
                     if (req.method == "GET"){
                         try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                        proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/�/g, "'").replace(/�/g, "'").replace(/%E2%80%98/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                        proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%E2%80%98/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
                             if (!err) {
                                 res.write(stdout);
-                                res.end();
                             } else {
                                 console.log(err);
                             }
+                            res.end();
                         });
                     } else if (req.method == "POST") {
                         var data = "";
@@ -166,13 +170,13 @@ var server = http.createServer(function(req, res) {
                         });
                         req.on('end', function(){
                             try {var parameters = data;} catch(err) {var parameters = ""}
-                            proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/�/g, "'").replace(/�/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                            proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
-                                    res.end();
                                 } else {
                                     console.log(err);
                                 }
+                                res.end();
                             });
                         });
                     }
@@ -181,7 +185,7 @@ var server = http.createServer(function(req, res) {
                 } else if (ext == ".php" && dest["php_enabled"] != undefined) {
                     if (req.method == "GET") {
                         try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                        proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/�/g, "'").replace(/�/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
+                        proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
                             if (!err) {
                                 res.write(stdout);
                                 res.end();
@@ -195,7 +199,7 @@ var server = http.createServer(function(req, res) {
                             data = data+body;
                         });
                         try {var parameters = data;} catch(err) {var parameters = ""}
-                        proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/�/g, "'").replace(/�/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
+                        proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
                             if (!err) {
                                 res.write(stdout);
                                 res.end();
@@ -230,7 +234,7 @@ var server = http.createServer(function(req, res) {
                     res.writeHead(404);
                     res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                     res.write(par);
-                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.2<body></html>");
+                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3_Linux<body></html>");
                     res.end();
                 }
             } else if (exists == 2) {
@@ -250,6 +254,10 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
         cert: fs.readFileSync('ssl/cert.pem')
     };
     var sserver = https.createServer(options, function(req, res) {
+        process.setgid("secureweb");
+        process.setegid("secureweb");
+        process.setuid("secureweb");
+        process.seteuid("secureweb");
         var date = new Date();
         var hour = date.getHours();
         var minute = date.getMinutes();
@@ -299,13 +307,13 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
 			res.writeHead(200, {'Access-Control-Allow-Origin': '*'});
                         if (req.method == "GET"){
                             try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                            proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/�/g, "'").replace(/�/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                            proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
-                                    res.end();
                                 } else {
                                     console.log(err);
                                 }
+                                res.end();
                             });
                         } else if (req.method == "POST") {
                             var data = "";
@@ -314,13 +322,13 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                             });
                             req.on('end', function(){
                                 try {var parameters = data;} catch(err) {var parameters = ""}
-                                proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/�/g, "'").replace(/�/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                                proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
                                     if (!err) {
                                         res.write(stdout);
-                                        res.end();
                                     } else {
                                         console.log(err);
                                     }
+                                    res.end();
                                 });
                             });
                         }
@@ -329,7 +337,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                     } else if (ext == ".php" && dest["php_enabled"] != undefined) {
                         if (req.method == "GET") {
                             try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                            proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/�/g, "'").replace(/�/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
+                            proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
                                     res.end();
@@ -343,7 +351,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                                 data = data+body;
                             });
                             try {var parameters = data;} catch(err) {var parameters = ""}
-                            proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/�/g, "'").replace(/�/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
+                            proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
                                     res.end();
@@ -378,7 +386,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                         res.writeHead(404);
                         res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                         res.write(par);
-                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.2<body></html>");
+                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3_Linux<body></html>");
                         res.end();
                     }
                 } else if (exists == 2) {
@@ -413,4 +421,4 @@ if (process.argv.indexOf("--config") != -1) {
     readconf("main.conf");
 }
 
-console.log("Started JoshieHTTPD/2.2");
+console.log("Started JoshieHTTPD/2.3_Linux);
