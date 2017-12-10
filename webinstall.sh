@@ -17,7 +17,7 @@ else
 	mkdir ~/.itmp
 fi
 echo " * Downloading server.js"
-wget -O ~/.itmp/server.js http://joshiehttp.gq/dl/server.js
+wget -O ~/.itmp/server.js http://joshiehttp.gq/dl/linux/server.js
 echo " * Downloading default configuration"
 wget -O ~/.itmp/main.conf http://joshiehttp.gq/dl/linux/main.conf
 echo " * Downloading run files"
