@@ -421,4 +421,4 @@ if (process.argv.indexOf("--config") != -1) {
     readconf("main.conf");
 }
 
-console.log("Started JoshieHTTPD/2.3_Linux);
+console.log("Started JoshieHTTPD/2.3_Linux");
