@@ -17,7 +17,7 @@ then
 	mkdir /var/www/html
 fi
 echo " * Moving files"
-mv -f files/* /var/www/*
+mv -f * /var/www/*
 echo " * chmodding files"
 chmod 660 /var/www/main.conf
 chmod 555 /var/www/server.js
