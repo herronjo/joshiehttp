@@ -22,3 +22,7 @@ etc.
 2.2 - Addition of PHP support
 
 That's it
+
+2.3 - Linux security enhancements
+
+Made it switch to an unprivileged user after starting. That's it.
