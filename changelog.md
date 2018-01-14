@@ -26,3 +26,7 @@ That's it
 2.3 - Linux security enhancements
 
 Made it switch to an unprivileged user after starting. Does not pertain to Windows. That's it.
+
+2.3.1 - Fixed some issues regarding URL encoding
+
+Fixed some issues where I accidentally made it parse URLs preemptively before running sjs files.
