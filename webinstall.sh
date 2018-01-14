@@ -39,7 +39,7 @@ then
 	mkdir /var/www/log
 fi
 echo " * Moving files"
-mv -f ~/.itmp/* /var/www/*
+mv -f ~/.itmp/* /var/www
 echo " * chmodding files"
 chmod 660 /var/www/main.conf
 chmod 555 /var/www/server.js
