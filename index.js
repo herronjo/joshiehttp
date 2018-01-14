@@ -13,6 +13,16 @@ var readconf = function(config) {
     conf = JSON.parse(content);
 };
 
+function parseCookies (request) {
+    var list = {};
+    var rc = request.headers.cookie;
+    rc && rc.split(';').forEach(function( cookie ) {
+        var parts = cookie.split('=');
+        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
+    return list;
+}
+
 var get = function(url, answ) {
     var data = "";
     if (url != undefined) {
@@ -152,10 +162,13 @@ var server = http.createServer(function(req, res) {
             if (exists == true) {exists = 1;} else {exists = 0;}
             if (exists == 1) {
                 if (ext == ".sjs") {
+                    //var cookies = parseCookies(req);
                     res.writeHead(200, {'Access-Control-Allow-Origin': '*'});
                     if (req.method == "GET"){
                         try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                        proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%E2%80%98/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                        //var parameters = req.url;
+                        //encodeURIComponent(parameters);
+                        proc.exec("node " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%E2%80%98/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"').replace(/&/g, "%2F") + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
                             if (!err) {
                                 res.write(stdout);
                             } else {
@@ -170,7 +183,7 @@ var server = http.createServer(function(req, res) {
                         });
                         req.on('end', function(){
                             try {var parameters = data;} catch(err) {var parameters = ""}
-                            proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                            proc.exec("node " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
                                 } else {
@@ -199,7 +212,7 @@ var server = http.createServer(function(req, res) {
                             data = data+body;
                         });
                         try {var parameters = data;} catch(err) {var parameters = ""}
-                        proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
+                        proc.exec("php " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
                             if (!err) {
                                 res.write(stdout);
                                 res.end();
@@ -234,7 +247,7 @@ var server = http.createServer(function(req, res) {
                     res.writeHead(404);
                     res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                     res.write(par);
-                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3_Linux<body></html>");
+                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3.1_Linux<body></html>");
                     res.end();
                 }
             } else if (exists == 2) {
@@ -307,7 +320,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
 			res.writeHead(200, {'Access-Control-Allow-Origin': '*'});
                         if (req.method == "GET"){
                             try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                            proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                            proc.exec("node " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
                                 } else {
@@ -322,7 +335,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                             });
                             req.on('end', function(){
                                 try {var parameters = data;} catch(err) {var parameters = ""}
-                                proc.exec("node " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                                proc.exec("node " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
                                     if (!err) {
                                         res.write(stdout);
                                     } else {
@@ -337,7 +350,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                     } else if (ext == ".php" && dest["php_enabled"] != undefined) {
                         if (req.method == "GET") {
                             try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                            proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
+                            proc.exec("php " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
                                     res.end();
@@ -386,7 +399,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                         res.writeHead(404);
                         res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                         res.write(par);
-                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3_Linux<body></html>");
+                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3.1_Linux<body></html>");
                         res.end();
                     }
                 } else if (exists == 2) {
@@ -421,4 +434,4 @@ if (process.argv.indexOf("--config") != -1) {
     readconf("main.conf");
 }
 
-console.log("Started JoshieHTTPD/2.3_Linux");
+console.log("Started JoshieHTTPD/2.3.1_Linux");
