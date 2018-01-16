@@ -13,11 +13,11 @@ A webserver designed and programmed by a bored 15 year old that has nothing bett
 [SSL](#ssl)
 
 # Running
-Create the directory /var/www/html, or edit the `'default'` configuration location to point to another folder that already exists.
+Create the directory C:\inetpub\html, or edit the `'default'` configuration location to point to another folder that already exists.
 
 Create `index.html` in that folder and put whatever you want in it.
 
-Run `./start.sh`
+Run `start.bat`
 
 # Creating new domains in main.conf
 The configuration file is a JSON file that contains the settings for every website you have running. If it's not found in there, the `'default'` configuration is used.
@@ -36,8 +36,8 @@ Ex:
 
 ```JSON
 {
-  "default": {"type": "local", "location": "/var/www/html"},
-  "www.example.com": {"type": "local", "location": "/var/www/html2"}
+  "default": {"type": "local", "location": "C:\\inetpub\\html"},
+  "www.example.com": {"type": "local", "location": "C:\\inetpub\\html2"}
 }
 ```
 
@@ -70,4 +70,4 @@ If you wish for JoshieHTTP to run with SSL (who wouldn't?), create a directory n
 
 In `ssl`, you need two files. `key.pem`, which is your private key, and `cert.pem`, which is your certificate file.
 
-Then, run `./start-ssl.sh`
+Then, run `start-ssl.bat`
