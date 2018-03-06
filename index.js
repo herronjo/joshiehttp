@@ -112,10 +112,10 @@ var post = function(url, stuff, answ) {
 };
 
 var server = http.createServer(function(req, res) {
-    process.setgid("secureweb");
+    /*process.setgid("secureweb");
     process.setegid("secureweb");
     process.setuid("secureweb");
-    process.seteuid("secureweb");
+    process.seteuid("secureweb");*/
     var date = new Date();
     var hour = date.getHours();
     var minute = date.getMinutes();
@@ -123,6 +123,7 @@ var server = http.createServer(function(req, res) {
     var params = url.parse(req.url,true).pathname;
     var params2 = url.parse(req.url,true).query;
     var params3 = url.parse(req.url,true);
+    var cookies = parseCookies(req);
     if (params == "/") par = "/index.html"; else par = params;
     var dest = conf[req.headers.host.split(":")[0]];
     if (dest == undefined) {dest = conf["default"]}
@@ -165,10 +166,19 @@ var server = http.createServer(function(req, res) {
                     //var cookies = parseCookies(req);
                     res.writeHead(200, {'Access-Control-Allow-Origin': '*'});
                     if (req.method == "GET"){
-                        try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                        //var parameters = req.url;
-                        //encodeURIComponent(parameters);
-                        proc.exec("node " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%E2%80%98/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"').replace(/&/g, "%2F") + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                        var parameters = {};
+                        try {parameters = url.parse(req.url,true).query} catch(err) {parameters = {}}
+                        var execopts = {
+                            env: {
+                                'PATH': process.env['PATH']
+                            }
+                        }
+                        execopts['env']['REQIP'] = req.connection.remoteAddress;
+                        var thing;
+                        for (thing in parameters) {
+                            execopts['env'][thing] = parameters[thing];
+                        }
+                        proc.exec("node " + dest["location"].concat(par), execopts, function(err, stdout, stderr) {
                             if (!err) {
                                 res.write(stdout);
                             } else {
@@ -182,8 +192,19 @@ var server = http.createServer(function(req, res) {
                             data = data+body;
                         });
                         req.on('end', function(){
-                            try {var parameters = data;} catch(err) {var parameters = ""}
-                            proc.exec("node " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                            var parameters = {};
+                            try {parameters = url.parse("?"+data,true).query;} catch(err) {parameters = {}}
+                            var execopts = {
+                                env: {
+                                    'PATH': process.env['PATH']
+                                }
+                            }
+                            execopts['env']['REQIP'] = req.connection.remoteAddress;
+                            var thing;
+                            for (thing in parameters) {
+                                execopts['env'][thing] = parameters[thing];
+                            }
+                            proc.exec("node " + dest["location"].concat(par), execopts, function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
                                 } else {
@@ -247,7 +268,7 @@ var server = http.createServer(function(req, res) {
                     res.writeHead(404);
                     res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                     res.write(par);
-                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3.1_Linux<body></html>");
+                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/3.0.0_Linux<body></html>");
                     res.end();
                 }
             } else if (exists == 2) {
@@ -267,10 +288,10 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
         cert: fs.readFileSync('ssl/cert.pem')
     };
     var sserver = https.createServer(options, function(req, res) {
-        process.setgid("secureweb");
+        /*process.setgid("secureweb");
         process.setegid("secureweb");
         process.setuid("secureweb");
-        process.seteuid("secureweb");
+        process.seteuid("secureweb");*/
         var date = new Date();
         var hour = date.getHours();
         var minute = date.getMinutes();
@@ -278,10 +299,11 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
         var params = url.parse(req.url,true).pathname;
         var params2 = url.parse(req.url,true).query;
         var params3 = url.parse(req.url,true);
+        var cookies = parseCookies(req);
         if (params == "/") par = "/index.html"; else par = params;
         var dest = conf[req.headers.host.split(":")[0]];
         if (dest == undefined) {dest = conf["default"]}
-        var ext = path.extname(par);
+        var ext = path.extname(par).toLowerCase();
         fs.appendFileSync("./log/log.txt", "[".concat(hour).concat(":").concat(minute).concat(":").concat(second).concat("] ").concat(req.connection.remoteAddress).concat(" : ").concat(req.method).concat(" : ").concat(req.headers.host).concat(req.url).concat("\n"));
         if (dest["type"] == "proxy") {
             if (req.method == "GET") {
@@ -293,7 +315,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                     }
                 });
             } else if (req.method == "POST") {
-                data = "";
+                var data = "";
                 req.on('data', function(body){
                     data = data+body;
                 });
@@ -303,8 +325,8 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                     });
                 });
             } else {
-                req.writeHead(405);
-                req.end();
+                res.writeHead(405);
+                res.end();
             }
         } else if (dest["type"] == "local") {
             fs.stat(dest["location"].concat(par), function(err, stats) {
@@ -317,10 +339,22 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                 if (exists == true) {exists = 1;} else {exists = 0;}
                 if (exists == 1) {
                     if (ext == ".sjs") {
-			res.writeHead(200, {'Access-Control-Allow-Origin': '*'});
+                        //var cookies = parseCookies(req);
+                        res.writeHead(200, {'Access-Control-Allow-Origin': '*'});
                         if (req.method == "GET"){
-                            try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                            proc.exec("node " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                            var parameters = {};
+                            try {parameters = url.parse(req.url,true).query} catch(err) {parameters = {}}
+                            var execopts = {
+                                env: {
+                                    'PATH': process.env['PATH']
+                                }
+                            }
+                            execopts['env']['REQIP'] = req.connection.remoteAddress;
+                            var thing;
+                            for (thing in parameters) {
+                                execopts['env'][thing] = parameters[thing];
+                            }
+                            proc.exec("node " + dest["location"].concat(par), execopts, function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
                                 } else {
@@ -334,8 +368,19 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                                 data = data+body;
                             });
                             req.on('end', function(){
-                                try {var parameters = data;} catch(err) {var parameters = ""}
-                                proc.exec("node " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"') + "&ip=" + req.connection.remoteAddress + '"', function(err, stdout, stderr) {
+                                var parameters = {};
+                                try {parameters = url.parse("?"+data,true).query;} catch(err) {parameters = {}}
+                                var execopts = {
+                                    env: {
+                                        'PATH': process.env['PATH']
+                                    }
+                                }
+                                execopts['env']['REQIP'] = req.connection.remoteAddress;
+                                var thing;
+                                for (thing in parameters) {
+                                    execopts['env'][thing] = parameters[thing];
+                                }
+                                proc.exec("node " + dest["location"].concat(par), execopts, function(err, stdout, stderr) {
                                     if (!err) {
                                         res.write(stdout);
                                     } else {
@@ -350,7 +395,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                     } else if (ext == ".php" && dest["php_enabled"] != undefined) {
                         if (req.method == "GET") {
                             try {var parameters = req.url.split("?")[1].split("&").join(" ");} catch(err) {var parameters = ""}
-                            proc.exec("php " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
+                            proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
                                     res.end();
@@ -364,7 +409,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                                 data = data+body;
                             });
                             try {var parameters = data;} catch(err) {var parameters = ""}
-                            proc.exec("php " + dest["location"].concat(par) + ' "' + decodeURIComponent(parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"')).replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
+                            proc.exec("php " + dest["location"].concat(par) + ' "' + parameters.replace(/ï¿½/g, "'").replace(/ï¿½/g, "'").replace(/%91/g, "'").replace(/%92/g, "'").replace(/%93/g, '"').replace(/%94/g, '"').replace(/"/g, '\\"') +'"', function(err, stdout, stderr) {
                                 if (!err) {
                                     res.write(stdout);
                                     res.end();
@@ -372,7 +417,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                                     console.log(err);
                                 }
                             });    
-                        }
+                        }  
                     } else if (not_raw_download.indexOf(ext) == -1) {
                         res.writeHead(200, {'Access-Control-Allow-Origin': '*'});
                         var stats = fs.statSync(dest["location"].concat(par));
@@ -399,7 +444,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                         res.writeHead(404);
                         res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                         res.write(par);
-                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/2.3.1_Linux<body></html>");
+                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/3.0.0_Linux<body></html>");
                         res.end();
                     }
                 } else if (exists == 2) {
@@ -434,4 +479,4 @@ if (process.argv.indexOf("--config") != -1) {
     readconf("main.conf");
 }
 
-console.log("Started JoshieHTTPD/2.3.1_Linux");
+console.log("Started JoshieHTTPD/3.0.0_Linux");
