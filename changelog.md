@@ -30,3 +30,7 @@ Made it switch to an unprivileged user after starting. That's it.
 2.3.1 - Fixed some issues regarding URL encoding
 
 Fixed some issues where I accidentally made it parse URLs preemptively before running sjs files.
+
+3.0.0 - Changed how arguments are passed to .sjs files
+
+Changed it so arguments are passed through environment variables instead of command line parameters, and allowed cookies to be passed to the script.
