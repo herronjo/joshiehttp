@@ -112,10 +112,10 @@ var post = function(url, stuff, answ) {
 };
 
 var server = http.createServer(function(req, res) {
-    /*process.setgid("secureweb");
+    process.setgid("secureweb");
     process.setegid("secureweb");
     process.setuid("secureweb");
-    process.seteuid("secureweb");*/
+    process.seteuid("secureweb");
     var date = new Date();
     var hour = date.getHours();
     var minute = date.getMinutes();
@@ -123,7 +123,6 @@ var server = http.createServer(function(req, res) {
     var params = url.parse(req.url,true).pathname;
     var params2 = url.parse(req.url,true).query;
     var params3 = url.parse(req.url,true);
-    var cookies = parseCookies(req);
     if (params == "/") par = "/index.html"; else par = params;
     var dest = conf[req.headers.host.split(":")[0]];
     if (dest == undefined) {dest = conf["default"]}
@@ -163,14 +162,14 @@ var server = http.createServer(function(req, res) {
             if (exists == true) {exists = 1;} else {exists = 0;}
             if (exists == 1) {
                 if (ext == ".sjs") {
-                    //var cookies = parseCookies(req);
                     res.writeHead(200, {'Access-Control-Allow-Origin': '*'});
                     if (req.method == "GET"){
                         var parameters = {};
                         try {parameters = url.parse(req.url,true).query} catch(err) {parameters = {}}
                         var execopts = {
                             env: {
-                                'PATH': process.env['PATH']
+                                'PATH': process.env['PATH'],
+                                'COOKIES': req.headers.cookie
                             }
                         }
                         execopts['env']['REQIP'] = req.connection.remoteAddress;
@@ -196,7 +195,8 @@ var server = http.createServer(function(req, res) {
                             try {parameters = url.parse("?"+data,true).query;} catch(err) {parameters = {}}
                             var execopts = {
                                 env: {
-                                    'PATH': process.env['PATH']
+                                    'PATH': process.env['PATH'],
+                                    'COOKIES': req.headers.cookie
                                 }
                             }
                             execopts['env']['REQIP'] = req.connection.remoteAddress;
@@ -288,10 +288,10 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
         cert: fs.readFileSync('ssl/cert.pem')
     };
     var sserver = https.createServer(options, function(req, res) {
-        /*process.setgid("secureweb");
+        process.setgid("secureweb");
         process.setegid("secureweb");
         process.setuid("secureweb");
-        process.seteuid("secureweb");*/
+        process.seteuid("secureweb");
         var date = new Date();
         var hour = date.getHours();
         var minute = date.getMinutes();
@@ -299,7 +299,6 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
         var params = url.parse(req.url,true).pathname;
         var params2 = url.parse(req.url,true).query;
         var params3 = url.parse(req.url,true);
-        var cookies = parseCookies(req);
         if (params == "/") par = "/index.html"; else par = params;
         var dest = conf[req.headers.host.split(":")[0]];
         if (dest == undefined) {dest = conf["default"]}
@@ -339,14 +338,14 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                 if (exists == true) {exists = 1;} else {exists = 0;}
                 if (exists == 1) {
                     if (ext == ".sjs") {
-                        //var cookies = parseCookies(req);
                         res.writeHead(200, {'Access-Control-Allow-Origin': '*'});
                         if (req.method == "GET"){
                             var parameters = {};
                             try {parameters = url.parse(req.url,true).query} catch(err) {parameters = {}}
                             var execopts = {
                                 env: {
-                                    'PATH': process.env['PATH']
+                                    'PATH': process.env['PATH'],
+                                    'COOKIES': req.headers.cookie
                                 }
                             }
                             execopts['env']['REQIP'] = req.connection.remoteAddress;
@@ -372,7 +371,8 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                                 try {parameters = url.parse("?"+data,true).query;} catch(err) {parameters = {}}
                                 var execopts = {
                                     env: {
-                                        'PATH': process.env['PATH']
+                                        'PATH': process.env['PATH'],
+                                        'COOKIES': req.headers.cookie
                                     }
                                 }
                                 execopts['env']['REQIP'] = req.connection.remoteAddress;
