@@ -58,7 +58,7 @@ Ex:
 ```
 
 # Scripting
-PHP, Ruby, Python, etc. is not supported in JoshieHTTP. Mainly because I didn't feel like adding them. Too much. So, to make up for that, I made the `.sjs` extension for scripting. It's just a .js file, but renamed. It runs in node.js, and all URL parameters are passed on as command line arguments to the script. You can go on from there, reading the arguments. It's all run server-side, and to send data back you just send it back in a `console.log();`. There's actually a lot you can do with this. Happy scripting!
+PHP, Ruby, Python, etc. is not supported in JoshieHTTP. Mainly because I didn't feel like adding them. Too much. So, to make up for that, I made the `.sjs` extension for scripting. It's just a .js file, but renamed. It runs in node.js, and all URL parameters and cookies (cookies in a single variable called "COOKIES") are passed on as environment variables to the script. You can go on from there, reading the variables. It's all run server-side, and to send data back you just send it back in a `console.log();`. There's actually a lot you can do with this. Happy scripting!
 
 Update: PHP support now added. Some (_most_) features don't work, since it's just called directly from the command line, but it's a start! Just make sure PHP is installed on your server. Just add ```"php_enabled"``` to your configuration file for the sites you want PHP on. Happy scripting!
 
