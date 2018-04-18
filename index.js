@@ -112,6 +112,13 @@ var post = function(url, stuff, answ) {
 };
 
 var server = http.createServer(function(req, res) {
+    if (process.argv.indexOf("--config") != -1) {
+        readconf(process.argv[parseInt(process.argv.indexOf("--config"))+1]);
+    } else if (process.argv.indexOf("-c") != -1) {
+        readconf(process.argv[parseInt(process.argv.indexOf("-c"))+1]);
+    } else {
+        readconf("main.conf");
+    }
     process.setgid("secureweb");
     process.setegid("secureweb");
     process.setuid("secureweb");
@@ -172,6 +179,8 @@ var server = http.createServer(function(req, res) {
                                 'COOKIES': req.headers.cookie
                             }
                         }
+                        execopts['env']['PATH'] = process.env['PATH'];
+                        execopts['env']['PWD'] = dest['location'];
                         execopts['env']['REQIP'] = req.connection.remoteAddress;
                         var thing;
                         for (thing in parameters) {
@@ -268,7 +277,7 @@ var server = http.createServer(function(req, res) {
                     res.writeHead(404);
                     res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                     res.write(par);
-                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/3.0.0_Linux<body></html>");
+                    res.write(" not found.<br/>------------------------<br/>JoshieHTTP/3.0.1_Linux<body></html>");
                     res.end();
                 }
             } else if (exists == 2) {
@@ -283,6 +292,13 @@ var server = http.createServer(function(req, res) {
 });
 
 if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
+    if (process.argv.indexOf("--config") != -1) {
+        readconf(process.argv[parseInt(process.argv.indexOf("--config"))+1]);
+    } else if (process.argv.indexOf("-c") != -1) {
+        readconf(process.argv[parseInt(process.argv.indexOf("-c"))+1]);
+    } else {
+        readconf("main.conf");
+    }
     var options = {
         key: fs.readFileSync('ssl/key.pem'),
         cert: fs.readFileSync('ssl/cert.pem')
@@ -348,6 +364,8 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                                     'COOKIES': req.headers.cookie
                                 }
                             }
+                            execopts['env']['PATH'] = process.env['PATH'];
+                            execopts['env']['PWD'] = dest['location'];
                             execopts['env']['REQIP'] = req.connection.remoteAddress;
                             var thing;
                             for (thing in parameters) {
@@ -444,7 +462,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                         res.writeHead(404);
                         res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
                         res.write(par);
-                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/3.0.0_Linux<body></html>");
+                        res.write(" not found.<br/>------------------------<br/>JoshieHTTP/3.0.1_Linux<body></html>");
                         res.end();
                     }
                 } else if (exists == 2) {
@@ -479,4 +497,4 @@ if (process.argv.indexOf("--config") != -1) {
     readconf("main.conf");
 }
 
-console.log("Started JoshieHTTPD/3.0.0_Linux");
+console.log("Started JoshieHTTPD/3.0.1_Linux");
