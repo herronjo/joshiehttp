@@ -1,5 +1,5 @@
 # Changelog
-2.0 - Initial creation
+2.0 - Initial creation (there was stuff before this)
 
 Raw format download (fixes file encoding breaking stuff)
 
@@ -34,3 +34,5 @@ Fixed some issues where I accidentally made it parse URLs preemptively before ru
 3.0.0 - Changed how arguments are passed to .sjs files
 
 Changed it so arguments are passed through environment variables instead of command line parameters, and allowed cookies to be passed to the script.
+
+3.0.1 - Fixed potential exploit involving PATH environment variable in sjs, now sjs files execute in the working directory they're located in.
