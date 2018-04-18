@@ -208,6 +208,8 @@ var server = http.createServer(function(req, res) {
                                     'COOKIES': req.headers.cookie
                                 }
                             }
+                            execopts['env']['PATH'] = process.env['PATH'];
+                            execopts['env']['PWD'] = dest['location'];
                             execopts['env']['REQIP'] = req.connection.remoteAddress;
                             var thing;
                             for (thing in parameters) {
@@ -393,6 +395,8 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
                                         'COOKIES': req.headers.cookie
                                     }
                                 }
+                                execopts['env']['PATH'] = process.env['PATH'];
+                                execopts['env']['PWD'] = dest['location'];
                                 execopts['env']['REQIP'] = req.connection.remoteAddress;
                                 var thing;
                                 for (thing in parameters) {
