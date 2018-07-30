@@ -36,3 +36,5 @@ Fixed some issues where I accidentally made it parse URLs preemptively before ru
 Changed it so arguments are passed through environment variables instead of command line parameters, and allowed cookies to be passed to the script.
 
 3.0.1 - Fixed potential exploit involving PATH environment variable in sjs, now sjs files execute in the working directory they're located in.
+
+3.0.2 - Finally decided to pass the HTTP headers to .sjs files and proxied sites.
