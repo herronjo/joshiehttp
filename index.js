@@ -1,9 +1,10 @@
 var http = require("http");
 var https = require('https');
 var url = require("url");
-var fs = require("fs");
+var fs = require("fs-extra");
 var path = require("path");
 var proc = require('child_process');
+var URL = url.URL;
 var par = "";
 var conf = [];
 var not_raw_download = [".html",".txt",".htm"];
@@ -25,56 +26,11 @@ function parseCookies (request) {
 
 var get = function(url, headers, answ) {
 	var data = "";
-	if (url != undefined) {
-		if (url.charAt(4) == "s") {
-			try{
-				https.get(url, {headers: headers}, function(response) {
-					response.setEncoding('utf8');
-					response.on('data', function(body) {
-						data = data + body;
-						response.on('end', function (){
-							answ(data);
-						});
-					});
-				});
-			} catch(err) {
-				console.log("Oops!");
-			}
-		} else if (url.charAt(4) == ":") {
-			try{
-				http.get(url, {headers: headers}, function(response) {
-					response.setEncoding('utf8');
-					response.on('data', function(body) {
-						data = data + body;
-						response.on('end', function (){
-							answ(data);
-						});
-					});
-				});
-			} catch(err) {
-				console.log("Oops!");
-			}
-		}
-	}
-};
-
-var post = function(url, stuff, headers, answ) {
-	var data = "";
 	var tmp = url.split(":");
 	var protocol = tmp[0];
-	var hostnametmp = tmp[1].split("/");
-	var hostname = hostnametmp[hostnametmp.length - 1];
-	var porttmp = tmp[2].split("/");
-	var port = porttmp[0];
-	var path = tmp[2].split(port)[1];
+	var options = new URL(url);
 	if (headers == undefined) {headers = {};}
-	var options = {
-		hostname: hostname,
-		port: port,
-		path: path,
-		method: 'POST',
-		headers: headers
-	};
+	options.headers = headers;
 	if (protocol == "http"){
 		var req = http.request(options, function(res) {
 			res.setEncoding('utf8');
@@ -87,7 +43,52 @@ var post = function(url, stuff, headers, answ) {
 		});
 		req.on('error', function(err) {
 			if(err) {
-				console.log("Oops!");
+				console.log(err);
+			}
+		});
+		req.write("");
+		req.end();
+	}
+	if (protocol == "https") {
+		var reqs = https.request(options, function(res) {
+			res.setEncoding('utf8');
+			res.on('data', function(body) {
+				data = data+body;
+			});
+			res.on('end', function() {
+				answ(data);
+			});
+		});
+		reqs.on('error', function(err) {
+			if(err) {
+				console.log(err);
+			}
+		});
+		reqs.write("");
+		reqs.end();
+	}
+}
+
+var post = function(url, stuff, headers, answ) {
+	var data = "";
+	var tmp = url.split(":");
+	var protocol = tmp[0];
+	var options = new URL(url);
+	if (headers == undefined) {headers = {};}
+	options.headers = headers;
+	if (protocol == "http"){
+		var req = http.request(options, function(res) {
+			res.setEncoding('utf8');
+			res.on('data', function(body) {
+				data = data+body;
+			});
+			res.on('end', function() {
+				answ(data);
+			});
+		});
+		req.on('error', function(err) {
+			if(err) {
+				console.log(err);
 			}
 		});
 		req.write(stuff);
@@ -105,7 +106,7 @@ var post = function(url, stuff, headers, answ) {
 		});
 		reqs.on('error', function(err) {
 			if(err) {
-				console.log("Oops!");
+				console.log(err);
 			}
 		});
 		reqs.write(stuff);
@@ -143,7 +144,7 @@ var server = http.createServer(function(req, res) {
 				try {
 					res.end(answ);
 				} catch(err) {
-					console.log("Oops!");
+					console.log(err);
 				}
 			});
 		} else if (req.method == "POST") {
@@ -152,7 +153,7 @@ var server = http.createServer(function(req, res) {
 				data = data+body;
 			});
 			req.on('end', function(){
-				post(dest["location"], data, req.headers, function(answ){
+				post(dest["location"].concat(params3.path), data, req.headers, function(answ){
 					res.end(answ);
 				});
 			});
@@ -176,7 +177,7 @@ var server = http.createServer(function(req, res) {
 						var parameters = {};
 						try {parameters = url.parse(req.url,true).query} catch(err) {parameters = {}}
 						var execopts = {
-				maxBuffer: 100000000,
+							maxBuffer: 100000000,
 							env: {
 								'PATH': process.env['PATH'],
 								'COOKIES': req.headers.cookie
@@ -279,21 +280,26 @@ var server = http.createServer(function(req, res) {
 				var exists2 = fs.existsSync(dest["location"].concat("/404.html"));
 				if (exists2) {
 					res.writeHead(404);
-					var data2 = fs.readFileSync(dest["location"].concat(par), 'utf8');
+					var data2 = fs.readFileSync(dest["location"].concat("/404.html"), 'utf8');
 					res.end(data2);
 				} else {
 					res.writeHead(404);
 					res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
 					res.write(par);
-					res.write(" not found.<br/>------------------------<br/>JoshieHTTP/3.0.2_Linux<body></html>");
+					res.write(" not found.<br/>------------------------<br/>JoshieHTTP/3.0.3_Linux<body></html>");
 					res.end();
 				}
 			} else if (exists == 2) {
 				res.writeHead(403);
 				res.end("Access denied!");
 			} else {
-				res.writeHead(500);
-				res.end("Error 500: internal server error.");
+				var exists2 = fs.existsSync(dest["location"].concat("/500.html"));
+				if (exists2) {
+					var data2 = fs.readFileSync(dest["location"].concat("/500.html"), 'utf8');
+					res.end(data2);
+				} else {
+					res.end("Error 500: internal server error");
+				}
 			}
 		});
 	}
@@ -334,7 +340,7 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
 					try {
 						res.end(answ);
 					} catch(err) {
-						console.log("Oops!");
+						console.log(err);
 					}
 				});
 			} else if (req.method == "POST") {
@@ -470,21 +476,26 @@ if (process.argv.indexOf("--https") != -1 || process.argv.indexOf("-s") != -1) {
 					var exists2 = fs.existsSync(dest["location"].concat("/404.html"));
 					if (exists2) {
 						res.writeHead(404);
-						var data2 = fs.readFileSync(dest["location"].concat(par), 'utf8');
+						var data2 = fs.readFileSync(dest["location"].concat("/404.html"), 'utf8');
 						res.end(data2);
 					} else {
 						res.writeHead(404);
 						res.write("<!DOCTYPE html><html><head><title>Error 404. File not found!</title></head><body><h1>ERROR 404</h1>File ");
 						res.write(par);
-						res.write(" not found.<br/>------------------------<br/>JoshieHTTP/3.0.2_Linux<body></html>");
+						res.write(" not found.<br/>------------------------<br/>JoshieHTTP/3.0.3_Linux<body></html>");
 						res.end();
 					}
 				} else if (exists == 2) {
 					res.writeHead(403);
 					res.end("Access denied!");
 				} else {
-					res.writeHead(500);
-					res.end("Error 500: internal server error.");
+					var exists2 = fs.existsSync(dest["location"].concat("/500.html"));
+					if (exists2) {
+						var data2 = fs.readFileSync(dest["location"].concat("/500.html"), 'utf8');
+						res.end(data2);
+					} else {
+						res.end("Error 500: internal server error");
+					}
 				}
 			});
 		}
@@ -511,4 +522,4 @@ if (process.argv.indexOf("--config") != -1) {
 	readconf("main.conf");
 }
 
-console.log("Started JoshieHTTPD/3.0.2_Linux");
+console.log("Started JoshieHTTPD/3.0.3_Linux");
