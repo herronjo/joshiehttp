@@ -38,3 +38,11 @@ Changed it so arguments are passed through environment variables instead of comm
 3.0.1 - Fixed potential exploit involving PATH environment variable in sjs, now sjs files execute in the working directory they're located in.
 
 3.0.2 - Finally decided to pass the HTTP headers to .sjs files and proxied sites.
+
+3.0.3 - Performance updates and fixed some error handling things
+
+Stopped trying to be better than the built in URL constructer and no longer parses URLs manually.
+
+Made sure that when you have a 404.html page, it doesn't just crash and not serve your 404.html file.
+
+Also, added the ability to add a 500.html page to the root of your website directory and show something when a server error ocurrs!
