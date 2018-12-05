@@ -1,5 +1,5 @@
 # JoshieHTTP
-A webserver designed and programmed by a bored 15 year old that has nothing better to do.
+A webserver designed and programmed by a bored 16 year old that has nothing better to do.
 
 # Table of contents 
 [Running](#running)
