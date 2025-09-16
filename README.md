@@ -1,3 +1,10 @@
+> [!CAUTION]
+> This is super-duper insecure and bad code. It is not worth using in the modern age, and not worth fixing either. Please do not use this ever.
+> 
+> There are actual, known command injection vulnerabilities here.
+>
+> If you really want to use a webserver written by me, use [SpruceHTTP](https://sprucehttp.com), which is way more secure and robust.
+
 # JoshieHTTP
 A webserver designed and programmed by a bored 15 year old that has nothing better to do.
 
